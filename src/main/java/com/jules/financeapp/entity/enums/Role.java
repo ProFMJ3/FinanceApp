@@ -1,4 +1,4 @@
-package com.jules.financeapp.entity;
+package com.jules.financeapp.entity.enums;
 
 public enum Role {
     ADMIN,

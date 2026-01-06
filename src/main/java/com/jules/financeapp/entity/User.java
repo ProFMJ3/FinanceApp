@@ -1,26 +1,34 @@
 package com.jules.financeapp.entity;
 
+import com.jules.financeapp.entity.enums.Role;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
-public class User {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String password;
@@ -31,46 +39,30 @@ public class User {
 
     private boolean enabled = true;
 
-    @CreatedDate// Date de création d'une ligne
-    @Column(updatable=false , nullable=true)//Proprietés de la colonne
     private LocalDateTime createDate;
-
-    @LastModifiedDate// Date finale de modification d'une ligne
-    @Column(updatable=false , nullable=true)
     private LocalDateTime updateDate;
 
-    // getters & setters
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Account> accounts;
 
-
-    public void setUsername(String username) {
-        this.username = username;
+    @PrePersist
+    protected void onCreate() {
+        createDate = LocalDateTime.now();
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @PreUpdate
+    protected void onUpdate() {
+        updateDate = LocalDateTime.now();
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return enabled; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public String getUsername() {
-        return username;
-    }
 }

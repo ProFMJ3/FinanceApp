@@ -1,4 +1,4 @@
-package com.jules.financeapp.service;
+package com.jules.financeapp.security;
 
 import com.jules.financeapp.entity.User;
 import com.jules.financeapp.repository.UserRepository;
@@ -7,10 +7,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -22,6 +21,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found"));
 
-        return user; // ⚠️ User DOIT implémenter UserDetails
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole().name()) // ADMIN / CLIENT
+                .disabled(!user.isEnabled())
+                .build();
     }
 }
